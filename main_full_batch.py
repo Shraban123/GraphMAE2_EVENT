@@ -19,7 +19,7 @@ from models import build_model
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
 
 
-def pretrain(model, graph, feat, optimizer, max_epoch, device, scheduler, num_classes, lr_f, weight_decay_f, max_epoch_f, linear_prob, logger=None):
+def pretrain(model, graph, feat, optimizer, max_epoch, device, scheduler, num_classes, lr_f, weight_decay_f, max_epoch_f, linear_prob, logger=None, block=0):
     logging.info("start training..")
     graph = graph.to(device)
     x = feat.to(device)
@@ -45,7 +45,7 @@ def pretrain(model, graph, feat, optimizer, max_epoch, device, scheduler, num_cl
             logger.note(loss_dict, step=epoch)
 
         if (epoch + 1) % 200 == 0:
-            linear_probing_full_batch(model, graph, x, num_classes, lr_f, weight_decay_f, max_epoch_f, device, linear_prob, mute=True)
+            linear_probing_full_batch(model, graph, x, num_classes, lr_f, weight_decay_f, max_epoch_f, device, linear_prob, mute=True, block=block)
 
     return model
 
@@ -77,6 +77,11 @@ def main(args):
     graph, (num_features, num_classes) = load_small_dataset(dataset_name)
     args.num_features = num_features
 
+    #shraban
+    block = 0 # default
+    if args.dataset_name.startswith('block'):
+        block = int(args.dataset_name.split('_')[1])
+    
     acc_list = []
     estp_acc_list = []
     for i, seed in enumerate(seeds):
@@ -101,7 +106,7 @@ def main(args):
             
         x = graph.ndata["feat"]
         if not load_model:
-            model = pretrain(model, graph, x, optimizer, max_epoch, device, scheduler, num_classes, lr_f, weight_decay_f, max_epoch_f, linear_prob, logger)
+            model = pretrain(model, graph, x, optimizer, max_epoch, device, scheduler, num_classes, lr_f, weight_decay_f, max_epoch_f, linear_prob, logger, block)
             model = model.cpu()
 
         if load_model:
@@ -111,7 +116,7 @@ def main(args):
         model = model.to(device)
         model.eval()
 
-        final_acc, estp_acc = linear_probing_full_batch(model, graph, x, num_classes, lr_f, weight_decay_f, max_epoch_f, device, linear_prob)
+        final_acc, estp_acc = linear_probing_full_batch(model, graph, x, num_classes, lr_f, weight_decay_f, max_epoch_f, device, linear_prob, block=block)
         acc_list.append(final_acc)
         estp_acc_list.append(estp_acc)
 
