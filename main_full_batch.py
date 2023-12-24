@@ -73,7 +73,9 @@ def main(args):
     load_model = args.load_model
     logs = args.logging
     use_scheduler = args.scheduler
-
+    
+    print("DEBUG: STEP 1 Accomplished !")
+    
     graph, (num_features, num_classes) = load_small_dataset(dataset_name)
     args.num_features = num_features
 
