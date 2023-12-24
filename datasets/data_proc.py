@@ -16,14 +16,14 @@ GRAPH_DICT = {
     "ogbn-arxiv": DglNodePropPredDataset,
     "block" : "/home/shraban/Paper3/KPGNN/KPGNN/incremental_test_100messagesperday/"
 }
-
+#shraban
 def load_small_dataset(dataset_name):
-    assert dataset_name.split('_')[0] in GRAPH_DICT, f"Unknow dataset: {dataset_name}."
+    assert dataset_name.split('_')[0] in GRAPH_DICT, f"Unknow dataset: {dataset_name}." #shraban
     if dataset_name.startswith("ogbn"):
         dataset = GRAPH_DICT[dataset_name](dataset_name)
-    elif dataset_name.startswith("cor") or dataset_name.startswith("pub") or dataset_name.startswith("cit"):
+    elif dataset_name.startswith("cor") or dataset_name.startswith("pub") or dataset_name.startswith("cit"): #shraban
         dataset = GRAPH_DICT[dataset_name]()
-    elif:
+    elif: #shraban
         data_path = GRAPH_DICT[dataset_name.split('_')[0]]
 
     
@@ -49,6 +49,8 @@ def load_small_dataset(dataset_name):
         test_mask = torch.full((num_nodes,), False).index_fill_(0, test_idx, True)
         graph.ndata["label"] = labels.view(-1)
         graph.ndata["train_mask"], graph.ndata["val_mask"], graph.ndata["test_mask"] = train_mask, val_mask, test_mask
+    
+    #shraban
     elif dataset_name.startswith('block'):
         block_num = dataset_name.split('_')[1]
         i,j = np.nonzero(sparse.load_npz('/home/shraban/Paper3/KPGNN/KPGNN/incremental_test_100messagesperday/'+block_num+'/s_bool_A_tid_tid.npz').toarray()) # load from file
@@ -75,10 +77,13 @@ def load_small_dataset(dataset_name):
         graph = graph.add_self_loop()
     
     num_features = graph.ndata["feat"].shape[1]
+    
+    #shraban
     if dataset_name.startswith('block'):
         num_classes = torch.unique(graph.ndata["label"]).shape[0]
     else:
         num_classes = dataset.num_classes
+    
     return graph, (num_features, num_classes)
 
 def preprocess(graph):
