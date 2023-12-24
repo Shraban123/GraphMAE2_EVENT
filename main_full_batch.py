@@ -106,7 +106,7 @@ def main(args):
         else:
             scheduler = None
             
-        x = graph.ndata["feat"]
+        x = graph.ndata["feat"].astype(np.float32)
         if not load_model:
             model = pretrain(model, graph, x, optimizer, max_epoch, device, scheduler, num_classes, lr_f, weight_decay_f, max_epoch_f, linear_prob, logger, block)
             model = model.cpu()
