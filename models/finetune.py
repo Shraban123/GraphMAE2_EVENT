@@ -13,6 +13,9 @@ from utils import accuracy, set_random_seed, show_occupied_memory, get_current_l
 
 import wandb
 
+#shraban
+import os
+
 
 def linear_probing_minibatch(
     model, graph,
@@ -314,11 +317,18 @@ def finetune(
     return test_acc
 
 
-def linear_probing_full_batch(model, graph, x, num_classes, lr_f, weight_decay_f, max_epoch_f, device, linear_prob=True, mute=False):
+def linear_probing_full_batch(model, graph, x, num_classes, lr_f, weight_decay_f, max_epoch_f, device, linear_prob=True, mute=False, block=0):
     model.eval()
     with torch.no_grad():
         x = model.embed(graph.to(device), x.to(device))
         in_feat = x.shape[1]
+    
+    #shraban- Save the features-------------------------------------------------------------------------------------------------
+    if not os.exists('/home/shraban/Paper3/unsupervised_features/block_'+str(block)+'/'):
+        os.makedirs('/home/shraban/Paper3/unsupervised_features/block_'+str(block)+'/')
+    torch.save(in_feat, '/home/shraban/Paper3/unsupervised_features/block_'+str(block)+'/'+'unsupervised_feat_'+str(block)+'.pt')
+    #---------------------------------------------------------------------------------------------------------------------------
+    
     encoder = LogisticRegression(in_feat, num_classes)
 
     num_finetune_params = [p.numel() for p in encoder.parameters() if  p.requires_grad]
