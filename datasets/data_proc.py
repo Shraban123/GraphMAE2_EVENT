@@ -14,15 +14,19 @@ GRAPH_DICT = {
     "citeseer": CiteseerGraphDataset,
     "pubmed": PubmedGraphDataset,
     "ogbn-arxiv": DglNodePropPredDataset,
+    "block" : "/home/shraban/Paper3/KPGNN/KPGNN/incremental_test_100messagesperday/"
 }
 
 def load_small_dataset(dataset_name):
-    assert dataset_name in GRAPH_DICT, f"Unknow dataset: {dataset_name}."
+    assert dataset_name.split('_')[0] in GRAPH_DICT, f"Unknow dataset: {dataset_name}."
     if dataset_name.startswith("ogbn"):
         dataset = GRAPH_DICT[dataset_name](dataset_name)
-    else:
+    elif dataset_name.startswith("cor") or dataset_name.startswith("pub") or dataset_name.startswith("cit"):
         dataset = GRAPH_DICT[dataset_name]()
+    elif:
+        data_path = GRAPH_DICT[dataset_name.split('_')[0]]
 
+    
     if dataset_name == "ogbn-arxiv":
         graph, labels = dataset[0]
         num_nodes = graph.num_nodes()
@@ -45,12 +49,36 @@ def load_small_dataset(dataset_name):
         test_mask = torch.full((num_nodes,), False).index_fill_(0, test_idx, True)
         graph.ndata["label"] = labels.view(-1)
         graph.ndata["train_mask"], graph.ndata["val_mask"], graph.ndata["test_mask"] = train_mask, val_mask, test_mask
+    elif dataset_name.startswith('block'):
+        block_num = dataset_name.split('_')[1]
+        i,j = np.nonzero(sparse.load_npz('/home/shraban/Paper3/KPGNN/KPGNN/incremental_test_100messagesperday/'+block_num+'/s_bool_A_tid_tid.npz').toarray()) # load from file
+        edge_index = torch.tensor([i.tolist(), j.tolist()]).to(int)
+        feats = torch.from_numpy(np.load('/home/shraban/Paper3/KPGNN/KPGNN/incremental_test_100messagesperday/'+block_num+'/features.npy')) # load from file
+        label = torch.from_numpy(np.load('/home/shraban/Paper3/KPGNN/KPGNN/incremental_test_100messagesperday/'+block_num+'/labels.npy')).to(int) # load from file
+        # labels are not always sequential so we need to make them sequential
+        label_map = {i.item() : j.item() for i,j in zip(torch.unique(label), torch.arange(len(torch.unique(label))).to(int))}
+        label = torch.tensor([label_map[i.item()] for i in label]).to(int)
+        
+        train_split, valid_split, test_split = torch.split(torch.arange(feats.size(0))[torch.randperm(feats.size(0))],[int(0.1*feats.size(0)),int(0.1*feats.size(0)),feats.size(0)-(2*int(0.1*feats.size(0)))],dim=0)
+        graph = dgl.DGLGraph((edge_index[0], edge_index[1]))
+        graph.ndata['feat'] = feats
+        graph.ndata['label'] = label
+        graph.ndata['test_mask'] = torch.zeros(graph.num_nodes(), dtype=torch.bool).scatter_(0, test_split, True)
+        graph.ndata['val_mask'] = torch.zeros(graph.num_nodes(), dtype=torch.bool).scatter_(0, valid_split, True)
+        graph.ndata['train_mask'] = torch.zeros(graph.num_nodes(), dtype=torch.bool).scatter_(0, train_split, True)
+        graph = dgl.remove_self_loop(graph)
+        graph = dgl.add_self_loop(graph)
+        
     else:
         graph = dataset[0]
         graph = graph.remove_self_loop()
         graph = graph.add_self_loop()
+    
     num_features = graph.ndata["feat"].shape[1]
-    num_classes = dataset.num_classes
+    if dataset_name.startswith('block'):
+        num_classes = torch.unique(graph.ndata["label"]).shape[0]
+    else:
+        num_classes = dataset.num_classes
     return graph, (num_features, num_classes)
 
 def preprocess(graph):
