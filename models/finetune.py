@@ -324,7 +324,7 @@ def linear_probing_full_batch(model, graph, x, num_classes, lr_f, weight_decay_f
         in_feat = x.shape[1]
     
     #shraban- Save the features-------------------------------------------------------------------------------------------------
-    if not os.exists('/home/shraban/Paper3/unsupervised_features/block_'+str(block)+'/'):
+    if not os.path.exists('/home/shraban/Paper3/unsupervised_features/block_'+str(block)+'/'):
         os.makedirs('/home/shraban/Paper3/unsupervised_features/block_'+str(block)+'/')
     torch.save(in_feat, '/home/shraban/Paper3/unsupervised_features/block_'+str(block)+'/'+'unsupervised_feat_'+str(block)+'.pt')
     #---------------------------------------------------------------------------------------------------------------------------
