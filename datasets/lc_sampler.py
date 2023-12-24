@@ -75,7 +75,12 @@ def load_dataset(data_dir, dataset_name):
         graph = dgl.add_self_loop(graph)
 
         label = torch.from_numpy(np.load('/home/shraban/Paper3/KPGNN/KPGNN/incremental_test_100messagesperday/'+block_num+'/labels.npy')).to(int) # load from file
-        train_split, valid_split, test_split = torch.split(torch.arange(f.size(0))[torch.randperm(f.size(0))],[int(0.1*f.size(0)),int(0.1*f.size(0)),f.size(0)-(2*int(0.1*f.size(0)))],dim=0)
+        
+        # labels are not always sequential so we need to make them sequential
+        label_map = {i.item() : j.item() for i,j in zip(torch.unique(label), torch.arange(len(torch.unique(label))).to(int))}
+        label = torch.tensor([label_map[i.item()] for i in label]).to(int)
+        
+        train_split, valid_split, test_split = torch.split(torch.arange(feats.size(0))[torch.randperm(feats.size(0))],[int(0.1*feats.size(0)),int(0.1*feats.size(0)),feats.size(0)-(2*int(0.1*feats.size(0)))],dim=0)
         split_idx = {'train': train_split, 'valid': valid_split, 'test': test_split} # format: split_idx = {'train':[...], 'valid':[...], 'test': [...]} with split ratio of 10, 10, 80 in the given order respectively.
         
 
