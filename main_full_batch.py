@@ -81,8 +81,8 @@ def main(args):
 
     #shraban
     block = 0 # default
-    if args.dataset_name.startswith('block'):
-        block = int(args.dataset_name.split('_')[1])
+    if dataset_name.startswith('block'):
+        block = int(dataset_name.split('_')[1])
     
     acc_list = []
     estp_acc_list = []
