@@ -326,7 +326,7 @@ def linear_probing_full_batch(model, graph, x, num_classes, lr_f, weight_decay_f
     #shraban- Save the features-------------------------------------------------------------------------------------------------
     if not os.path.exists('/home/shraban/Paper3/unsupervised_features/block_'+str(block)+'/'):
         os.makedirs('/home/shraban/Paper3/unsupervised_features/block_'+str(block)+'/')
-    torch.save(in_feat, '/home/shraban/Paper3/unsupervised_features/block_'+str(block)+'/'+'unsupervised_feat_'+str(block)+'.pt')
+    torch.save(x, '/home/shraban/Paper3/unsupervised_features/block_'+str(block)+'/'+'unsupervised_feat_'+str(block)+'.pt')
     #---------------------------------------------------------------------------------------------------------------------------
     
     encoder = LogisticRegression(in_feat, num_classes)
