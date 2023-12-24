@@ -62,7 +62,22 @@ def load_dataset(data_dir, dataset_name):
         split_idx = torch.load(os.path.join(data_dir, "split_idx_f.pt"))
 
         # graph.ndata["feat"] = feats
-        # graph.ndata["label"] = label  
+        # graph.ndata["label"] = label
+    #shraban
+    elif dataset_name.startswith("block"):
+        block_num = dataset_name.split('_')[1]
+        i,j = np.nonzero(sparse.load_npz('/home/shraban/Paper3/KPGNN/KPGNN/incremental_test_100messagesperday/'+block_num+'/s_bool_A_tid_tid.npz').toarray()) # load from file
+        edge_index = torch.tensor([i.tolist(), j.tolist()]).to(int)
+        feats = torch.from_numpy(np.load('/home/shraban/Paper3/KPGNN/KPGNN/incremental_test_100messagesperday/'+block_num+'/features.npy')) # load from file
+        graph = dgl.DGLGraph((edge_index[0], edge_index[1]))
+        
+        graph = dgl.remove_self_loop(graph)
+        graph = dgl.add_self_loop(graph)
+
+        label = torch.from_numpy(np.load('/home/shraban/Paper3/KPGNN/KPGNN/incremental_test_100messagesperday/'+block_num+'/labels.npy')).to(int) # load from file
+        train_split, valid_split, test_split = torch.split(torch.arange(f.size(0))[torch.randperm(f.size(0))],[int(0.1*f.size(0)),int(0.1*f.size(0)),f.size(0)-(2*int(0.1*f.size(0)))],dim=0)
+        split_idx = {'train': train_split, 'valid': valid_split, 'test': test_split} # format: split_idx = {'train':[...], 'valid':[...], 'test': [...]} with split ratio of 10, 10, 80 in the given order respectively.
+        
 
     return feats, graph, label, split_idx
 
