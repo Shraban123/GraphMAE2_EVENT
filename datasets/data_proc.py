@@ -28,7 +28,8 @@ def load_small_dataset(dataset_name):
         dataset = GRAPH_DICT[dataset_name](dataset_name)
     elif dataset_name.startswith("cor") or dataset_name.startswith("pub") or dataset_name.startswith("cit"): #shraban
         dataset = GRAPH_DICT[dataset_name]()
-    elif: #shraban
+    #shraban
+    elif:
         data_path = GRAPH_DICT[dataset_name.split('_')[0]]
 
     
